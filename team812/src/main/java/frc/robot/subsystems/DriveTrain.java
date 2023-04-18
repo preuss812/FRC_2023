@@ -278,8 +278,14 @@ public class DriveTrain extends SubsystemBase {
       zRotation = 0.0;
       path=99;
     }
+    SmartDashboard.putNumber("yd-throttle", throttle);
+    SmartDashboard.putNumber("yd-rotation", zRotation);
+    SmartDashboard.putNumber("yd-robotOrientation", robotOrientation);
+    SmartDashboard.putNumber("yd-JoystickOrientation",joystickOrientation);
+  
     // For debug safety, clamp the values to safe levels
     throttle = MathUtil.clamp(throttle, -0.1, 0.1);
+    throttle = 0;
     zRotation = MathUtil.clamp(zRotation, -0.2, 0.2);
     preussDrive(throttle, -zRotation);
     System.out.printf("%d %d %f %f %f %f %d %d %s %d\n"
@@ -301,12 +307,13 @@ public class DriveTrain extends SubsystemBase {
 
   // joystickToYaw - helper function to convert joystick X/Y to yaw.
   public double joystickToYaw(double joystickY, double joystickX) {
+    
     double yaw = 0.0; // return 0 if the calculations fall through
     if (joystickX == 0.0) {
       if (joystickY == 0.0) {
         yaw = 0.0; // no joystick input so using 0.0 as a sentinel value.
       }
-      else if (joystickY > 0) {
+      else if (joystickY < 0) {
         yaw = 0.0; // Straight ahead
       }
       else {
@@ -394,7 +401,7 @@ public class DriveTrain extends SubsystemBase {
     if (joystickMagnitude > 0.0) {
 
       // compute the yaw implied by the joystick Y,X
-      joystickYaw = joystickToYaw(joystickY, joystickX);
+      joystickYaw = joystickToYaw(joystickY, -joystickX);
       
       // Compute the relative angle of the robot vs the joystick;
       // Need to try both forward and backward relative angles to see which requires less turning.
@@ -423,10 +430,17 @@ public class DriveTrain extends SubsystemBase {
       throttle = 0.0;
       zRotation = 0.0;
     }
-
+    SmartDashboard.putNumber("yd-throttle", throttle);
+    SmartDashboard.putNumber("yd-rotation", zRotation);
+    SmartDashboard.putNumber("yd-robotOrientation", robotYaw);
+    SmartDashboard.putNumber("yd-JoystickOrientation",joystickYaw);
+    SmartDashboard.putNumber("yd-joystickX", joystickX);
+    SmartDashboard.putNumber("yd-joystickY", joystickY);
+  
     // For debug safety, clamp the values to safe levels
     //throttle = MathUtil.clamp(throttle, -0.1, 0.1);
-    //zRotation = MathUtil.clamp(zRotation, -0.2, 0.2);
+    throttle = 0.0;
+    zRotation = MathUtil.clamp(zRotation, -0.2, 0.2);
 
     preussDrive(throttle, -zRotation);  // TODO Verify sign of zRotation is correct.
     System.out.printf("%f %f %f %f %f %f %f %f %s\n"
