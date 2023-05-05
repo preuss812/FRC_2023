@@ -90,11 +90,15 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-
+    boolean yawDrive = false;
     m_ArmRotationSubsystem.unsetHome("RobotContainer");
 
+    if (yawDrive) 
+      m_DriveTrain.setDefaultCommand(
+        new RunCommand(() -> m_DriveTrain.yawDrive(rightJoystick.getY(), rightJoystick.getX()), m_DriveTrain));
+    else
     m_DriveTrain.setDefaultCommand(
-        new RunCommand(() -> m_DriveTrain.preussDrive(rightJoystick.getY(), -rightJoystick.getX()), m_DriveTrain));
+      new RunCommand(() -> m_DriveTrain.preussDrive(rightJoystick.getY(), -rightJoystick.getX()), m_DriveTrain));
 
     m_ArmRotationSubsystem.setDefaultCommand(
         new RunCommand(() -> m_ArmRotationSubsystem.rotate(leftJoystick.getY()), m_ArmRotationSubsystem));
@@ -125,6 +129,10 @@ public class RobotContainer {
   */
   SmartDashboard.putData("xDrive",new testXDrive(m_DriveTrain));
   SmartDashboard.putData("yawDrive",new testYawDrive(m_DriveTrain));
+  SmartDashboard.putData("testJoystick2Yaw",new testJoystickToYaw());
+  SmartDashboard.putNumber("joystickX", 0.0);
+  SmartDashboard.putNumber("joystickY", 0.0);
+  
 }
 
   /**

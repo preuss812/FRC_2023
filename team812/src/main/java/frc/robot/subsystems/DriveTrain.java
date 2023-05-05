@@ -306,12 +306,11 @@ public class DriveTrain extends SubsystemBase {
   }
 
   // joystickToYaw - helper function to convert joystick X/Y to yaw.
-  public double joystickToYaw(double joystickY, double joystickX) {
-    
+  public static double joystickToYaw(double joystickY, double joystickX) {
     double yaw = 0.0; // return 0 if the calculations fall through
     if (joystickX == 0.0) {
       if (joystickY == 0.0) {
-        yaw = 0.0; // no joystick input so using 0.0 as a sentinel value.
+        yaw = 0.0; // no joystick input so using 0.0 as a sentinel value.  Perhaps should use robot orientation?
       }
       else if (joystickY < 0) {
         yaw = 0.0; // Straight ahead
@@ -322,22 +321,22 @@ public class DriveTrain extends SubsystemBase {
     } else if (joystickX > 0.0) {
         if (joystickY == 0.0) {
           yaw = 90.0;
-        } else if (joystickY > 0.0) {
+        } else if (joystickY < 0.0) {
           // vector is somewhere in the first quadrant (ie between North and East)
-          yaw = Math.atan(joystickX/joystickY)*360/Math.PI/2.0;
+          yaw = Math.atan(-joystickX/joystickY)*360/Math.PI/2.0;
         } else {
           // vector is somewhere in the fourth quadrant (ie between East and South)
-          yaw = -180 - Math.atan(joystickX/joystickY)*360/Math.PI/2.0;
+          yaw = 180 - Math.atan(joystickX/joystickY)*360/Math.PI/2.0;
         }
     } else {
       if (joystickY == 0.0) {
         yaw = -90.0;
-      } else if (joystickY > 0.0) {
+      } else if (joystickY < 0.0) {
         // vector is somewhere in the first quadrant (ie between North and West)
-        yaw = Math.atan(joystickX/joystickY)*360/Math.PI/2.0;
+        yaw = Math.atan(-joystickX/joystickY)*360/Math.PI/2.0;
       } else {
         // vector is somewhere in the fourth quadrant (ie between West and South)
-        yaw = Math.atan(joystickX/joystickY)*360/Math.PI/2.0 - 180;
+        yaw = -180 - Math.atan(joystickX/joystickY)*360/Math.PI/2.0;
       }
     }
     return yaw;
@@ -367,7 +366,7 @@ public class DriveTrain extends SubsystemBase {
   // It is likely that an explcit input to reverse direction or rotate may be required as well
   // (e.g. right 90 degrees or left 90 degrees buttons). 
   public void yawDrive(double joystickY, double joystickX) {
-    double kRotation = 1.0/90.0; // Initial guess for P as in PID for the rotation speed vs desired change in yaw.
+    double kRotation = 3.0/90.0; // Initial guess for P as in PID for the rotation speed vs desired change in yaw.
     double kXDeadZone = 0.02;    // Treat joystick X input below 0.02 as 0.0;
     double kYDeadZone = 0.02;    // Treat joystick Y input below 0.02 as 0.0;
     double kAngleTransition = 5.0; // start throttle accelerations if angle is within _x_ degrees.
@@ -401,7 +400,7 @@ public class DriveTrain extends SubsystemBase {
     if (joystickMagnitude > 0.0) {
 
       // compute the yaw implied by the joystick Y,X
-      joystickYaw = joystickToYaw(joystickY, -joystickX);
+      joystickYaw = joystickToYaw(joystickY, joystickX);
       
       // Compute the relative angle of the robot vs the joystick;
       // Need to try both forward and backward relative angles to see which requires less turning.
@@ -412,7 +411,7 @@ public class DriveTrain extends SubsystemBase {
         fwdRev = "Forward";
         zRotation = joystickMagnitude * forwardDeltaYaw * kRotation;
         if (Math.abs(robotSpeed) > kSpeedTransition || Math.abs(forwardDeltaYaw) < kAngleTransition ) {
-          throttle = joystickMagnitude;
+          throttle = -joystickMagnitude;
         } else {
           throttle = 0.0; // rotate first, then accelerate
         }
@@ -420,7 +419,7 @@ public class DriveTrain extends SubsystemBase {
         fwdRev = "Reverse";
         zRotation = joystickMagnitude * reverseDeltaYaw * kRotation;
         if (Math.abs(robotSpeed) > kSpeedTransition || Math.abs(reverseDeltaYaw) < kAngleTransition ) {
-          throttle = -joystickMagnitude;
+          throttle = joystickMagnitude;
         } else {
           throttle = 0.0; // rotate first, then accelerate
         }
@@ -436,11 +435,13 @@ public class DriveTrain extends SubsystemBase {
     SmartDashboard.putNumber("yd-JoystickOrientation",joystickYaw);
     SmartDashboard.putNumber("yd-joystickX", joystickX);
     SmartDashboard.putNumber("yd-joystickY", joystickY);
-  
+    SmartDashboard.putString("yd-fwdrev", fwdRev);
+
     // For debug safety, clamp the values to safe levels
     //throttle = MathUtil.clamp(throttle, -0.1, 0.1);
-    throttle = 0.0;
-    zRotation = MathUtil.clamp(zRotation, -0.2, 0.2);
+    //throttle = 0.0;
+    throttle = MathUtil.clamp(throttle,-0.5,0.5);
+    zRotation = MathUtil.clamp(zRotation, -0.7, 0.7);
 
     preussDrive(throttle, -zRotation);  // TODO Verify sign of zRotation is correct.
     System.out.printf("%f %f %f %f %f %f %f %f %s\n"
