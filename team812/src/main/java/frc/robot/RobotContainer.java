@@ -63,13 +63,12 @@ public class RobotContainer {
 
   // Controller definitions
   private final Joystick leftJoystick = new Joystick(OIConstants.kLeftJoystick);
-  private final Joystick rightJoystick = new Joystick(OIConstants.kRightJoystick);
+  // private final Joystick rightJoystick = new Joystick(OIConstants.kRightJoystick);
 
   // Gyro
   public static GyroSubsystem m_GyroSubsystem = new GyroSubsystem();
 
-  // private final Joystick xboxController = new
-  // Joystick(OIConstants.kXboxController);
+  private final Joystick rightJoystick = new Joystick(OIConstants.kXboxController);
   double POV_to_double(int pov) {
     double result;
     if (pov == -1) {
@@ -90,7 +89,7 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    boolean yawDrive = false;
+    boolean yawDrive = true;
     m_ArmRotationSubsystem.unsetHome("RobotContainer");
 
     if (yawDrive) 
